@@ -1,11 +1,12 @@
 use anchor_lang::prelude::*;
 
-use anchor_spl :: {
-    associated_token::AssociatedToken, token::{close_account, CloseAccount}, token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked}
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token::{close_account, CloseAccount},
+    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
 };
 
 use crate::state::Escrow;
-
 
 #[derive(Accounts)]
 pub struct Refund<'info> {
@@ -34,7 +35,7 @@ pub struct Refund<'info> {
         bump = escrow.bump
     )]
     pub escrow: Account<'info, Escrow>,
-    
+
     #[account(
         mut,
         associated_token::mint = mint_a,
@@ -45,43 +46,44 @@ pub struct Refund<'info> {
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
-    pub system_program: Program<'info, System>
-
+    pub system_program: Program<'info, System>,
 }
 
 impl<'info> Refund<'info> {
     pub fn refund_and_close_vault(&mut self) -> Result<()> {
+
         // transfer from vault to maker ata
-
-        let cpi_program = self.token_program.to_account_info();
-
-        let transfer_account = TransferChecked {
-            from : self.vault.to_account_info(),
-            mint : self.mint_a.to_account_info(),
-            to : self.maker_ata_a.to_account_info(),
-            authority: self.escrow.to_account_info()
-        };
 
         let signer_seeds: [&[&[u8]]; 1] = [&[
             b"escrow",
             self.maker.to_account_info().key.as_ref(),
             &self.escrow.seed.to_le_bytes()[..],
-            &[self.escrow.bump]
+            &[self.escrow.bump],
         ]];
 
-        let cpi_ctx = CpiContext::new_with_signer(cpi_program, transfer_account, &signer_seeds);
+        let transfer_account = TransferChecked {
+            from: self.vault.to_account_info(),
+            mint: self.mint_a.to_account_info(),
+            to: self.maker_ata_a.to_account_info(),
+            authority: self.escrow.to_account_info(),
+        };
+
+        let cpi_ctx = CpiContext::new_with_signer(self.token_program.to_account_info(), transfer_account, &signer_seeds);
 
         transfer_checked(cpi_ctx, self.vault.amount, self.mint_a.decimals)?;
 
         let close_accounts = CloseAccount {
-            account : self.vault.to_account_info(),
+            account: self.vault.to_account_info(),
             destination: self.maker.to_account_info(), // giving rent back to maker
-            authority: self.escrow.to_account_info()
+            authority: self.escrow.to_account_info(),
         };
 
-        let close_cpi_ctx = CpiContext::new_with_signer(self.token_program.to_account_info(), close_accounts, &signer_seeds);
+        let close_cpi_ctx = CpiContext::new_with_signer(
+            self.token_program.to_account_info(),
+            close_accounts,
+            &signer_seeds,
+        );
 
         close_account(close_cpi_ctx)
-
     }
 }

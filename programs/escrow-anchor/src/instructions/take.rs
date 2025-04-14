@@ -40,7 +40,7 @@ pub struct Take<'info> {
 
     #[account(
         mut,
-        associated_token::mint = mint_a,
+        associated_token::mint = mint_b,
         associated_token::authority = taker,
         associated_token::token_program = token_program
     )]
