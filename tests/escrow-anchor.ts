@@ -71,6 +71,29 @@ describe("escrow-anchor", () => {
       tokenProgram,
     }
 
+    let listenerIds: number[] = [];
+
+    before(() => {
+      const makeListner = program.addEventListener("makeEvent", (event, slot, signature) => {
+        console.log("Make Event :", event, "Slot :", slot, "signature:", signature);
+      });
+
+      listenerIds.push(makeListner);
+
+      const refundListner = program.addEventListener("refundEvent", (event, slot, signature) => {
+        console.log("Refund Event :", event, "Slot :", slot, "signature:", signature);
+      });
+
+      listenerIds.push(refundListner);
+
+      const takeListner = program.addEventListener("takeEvent", (event, slot, signature) => {
+        console.log("Take Event :", event, "Slot :", slot, "signature:", signature);
+      });
+
+      listenerIds.push(takeListner);
+
+    })
+
     it("Airdrop and create mints", async () => {
       let lamports = await getMinimumBalanceForRentExemptMint(provider.connection);
       let tx = new Transaction();
@@ -120,34 +143,34 @@ describe("escrow-anchor", () => {
 
   });
 
-  it("Refund", async () => {
-    const tx = await program.methods
-    .refund()
-    .accounts({ ...accounts })
-    .signers([maker])
-    .rpc()
-    .then(confirm)
-    .then(log);
+  // it("Refund", async () => {
+  //   const tx = await program.methods
+  //   .refund()
+  //   .accounts({ ...accounts })
+  //   .signers([maker])
+  //   .rpc()
+  //   .then(confirm)
+  //   .then(log);
 
-    console.log("Refund Completed", tx);
-  });
-
-  // it("Take", async () => {
-  //   try{
-  //     const tx = await program.methods
-  //       .take()
-  //       .accounts({ ...accounts })
-  //       .signers([taker])
-  //       .rpc()
-  //       .then(confirm)
-  //       .then(log);
-
-  //   console.log("take confirmed", tx);
-  //   }catch(e){
-  //     console.log(e);
-  //     throw(e);
-  //   };
-
+  //   console.log("Refund Completed", tx);
   // });
+
+  it("Take", async () => {
+    try{
+      const tx = await program.methods
+        .take()
+        .accounts({ ...accounts })
+        .signers([taker])
+        .rpc()
+        .then(confirm)
+        .then(log);
+
+    console.log("take confirmed", tx);
+    }catch(e){
+      console.log(e);
+      throw(e);
+    };
+
+  });
 
 });

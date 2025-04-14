@@ -13,7 +13,7 @@ use crate::state::Escrow;
 
 #[derive(Accounts)]
 pub struct Take<'info> {
-    #[account()]
+    #[account(mut)]
     pub maker: SystemAccount<'info>,
 
     #[account(mut)]
