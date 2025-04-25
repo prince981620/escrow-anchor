@@ -53,7 +53,7 @@ pub struct Take<'info> {
         associated_token::authority = maker,
         associated_token::token_program = token_program
     )]
-    pub maker_ata_b: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub maker_ata_b: Box<InterfaceAccount<'info, TokenAccount>>, // Box is used to allocate heap memory where passing lots of accounts cause stack overflow
 
     #[account(
         mut,

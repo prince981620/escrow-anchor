@@ -143,17 +143,17 @@ describe("escrow-anchor", () => {
 
   });
 
-  // it("Refund", async () => {
-  //   const tx = await program.methods
-  //   .refund()
-  //   .accounts({ ...accounts })
-  //   .signers([maker])
-  //   .rpc()
-  //   .then(confirm)
-  //   .then(log);
+  xit("Refund", async () => {
+    const tx = await program.methods
+    .refund()
+    .accounts({ ...accounts })
+    .signers([maker])
+    .rpc()
+    .then(confirm)
+    .then(log);
 
-  //   console.log("Refund Completed", tx);
-  // });
+    console.log("Refund Completed", tx);
+  });
 
   it("Take", async () => {
     try{
@@ -172,5 +172,12 @@ describe("escrow-anchor", () => {
     };
 
   });
+
+  after("cleanup event listeners", async () => {
+    for (const id of listenerIds) {
+      await program.removeEventListener(id);
+    }
+  });
+  
 
 });
